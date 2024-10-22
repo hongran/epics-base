@@ -24,9 +24,9 @@
 #include <epicsString.h>
 #include <envDefs.h>
 
-char *env_nfsServer;
-char *env_nfsPath;
-char *env_nfsMountPoint;
+char *env_nfsServer = "164.54.8.14";
+char *env_nfsPath = "/export";
+char *env_nfsMountPoint = "/home";
 
 extern char* rtems_bsdnet_bootp_cmdline;
 /*

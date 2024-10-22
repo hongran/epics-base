@@ -137,7 +137,7 @@ OP_SYS_LDLIBS_score_NET_yes = -lnfs
 OP_SYS_LDLIBS_score_NET_no = -lnfs
 OP_SYS_LDLIBS += -lrtemsCom -lCom
 OP_SYS_LDLIBS += $(OP_SYS_LDLIBS_$(OS_API)_NET_$(RTEMS_HAS_NETWORKING))
-OP_SYS_LDLIBS += -lrtemscpu -lc -lm
+OP_SYS_LDLIBS += -lrtemscpu -lc -lm -lrtemsbsp
 
 OP_SYS_LDFLAGS_posix = -u POSIX_Init
 OP_SYS_LDFLAGS_score = -u Init \

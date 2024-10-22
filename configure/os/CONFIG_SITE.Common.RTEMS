@@ -26,6 +26,8 @@
 
 # Cross-compile toolchain in $(RTEMS_TOOLS)/bin
 #
+RTEMS_BASE = /home/phoebus/RHONG/Projects/RTEMS/rtems/6
+RTEMS_VERSION = 6
 RTEMS_TOOLS = $(RTEMS_BASE)
 
 # Link Generic System loadable objects instead of full executable.

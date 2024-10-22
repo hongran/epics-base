@@ -62,9 +62,11 @@
 #include <librtemsNfs.h>
 #else // libbsd stack
 #include <rtems/bsd/bsd.h>
-#include <rtems/bsd/modules.h>
 #include <rtems/dhcpcd.h>
 #include <machine/rtems-bsd-commands.h>
+#include <bsp.h>
+#include <rtems/bsd/modules.h>
+#include <bsp/vmeTsi148.h>
 #endif
 
 #include <rtems/telnetd.h>
@@ -100,7 +102,9 @@ epicsEventId 	dhcpDone;
 char rtemsInit_NTP_server_ip[16] = "";
 char bootp_server_name_init[128] = "1001.1001@10.0.5.1:/epics";
 char bootp_boot_file_name_init[128] = "/epics/myExample/bin/RTEMS-beatnik/myExample.boot";
-char bootp_cmdline_init[128] = "/epics/myExample/iocBoot/iocmyExample/st.cmd";
+//char bootp_cmdline_init[128] = "/epics/myExample/iocBoot/iocmyExample/st.cmd";
+//char bootp_cmdline_init[128] = "/iocapps2/RTEMS/rhong/rtems-ioc-test/iocBoot/ioc2rtemstest/st.cmd";
+char bootp_cmdline_init[128] = "/home/phoebus3/RHONG/C2/iocs/sr-controls/iocBoot/ioc2mrftest/st.cmd";
 
 /* TODO check rtems_bsdnet_bootp_cmdline */
 #ifndef RTEMS_LEGACY_STACK
@@ -1032,16 +1036,31 @@ POSIX_Init ( void *argument __attribute__((unused)))
     sc = rtems_task_wake_after(2);
     assert(sc == RTEMS_SUCCESSFUL);
 
+
+    /* for u-boot environment */
+    const char *uboot_if = bsp_uboot_getenv("bootif");
+    const char *uboot_ip = bsp_uboot_getenv("ipaddr");
+    const char *uboot_netmask = bsp_uboot_getenv("netmask");
+    const char *uboot_gateway = bsp_uboot_getenv("gatwayip");
+    const char *uboot_appserver = bsp_uboot_getenv("appserverip");
+    const char *uboot_epics_script = bsp_uboot_getenv("s");
+    rtems_bsdnet_bootp_cmdline = uboot_epics_script;
     printf("\n***** ifconfig lo0 *****\n");
     rtems_bsd_ifconfig_lo0();
 
-    printf("\n***** add dhcpcd hook *****\n");
-    dhcpDone = epicsEventMustCreate(epicsEventEmpty);
-    rtems_dhcpcd_add_hook(&dhcpcd_hook);
+    printf("\n***** ifconfig from uboot_if *****\n");
+    rtems_bsd_ifconfig(uboot_if, uboot_ip,uboot_netmask, uboot_gateway);
 
-    printf("\n***** Start default network dhcpcd *****\n");
+    
+    sleep(5);
+
+//    printf("\n***** add dhcpcd hook *****\n");
+//    dhcpDone = epicsEventMustCreate(epicsEventEmpty);
+//    rtems_dhcpcd_add_hook(&dhcpcd_hook);
+
+//    printf("\n***** Start default network dhcpcd *****\n");
     // if MY_BOOTP???
-    default_network_dhcpcd();
+//    default_network_dhcpcd();
 
     /* this seems to be hard coded in the BSP -> Sebastian Huber ? */
     printf("\n--Info (hpj)-- bsd task prio IRQS: %d  -----\n", rtems_bsd_get_task_priority("IRQS"));
@@ -1049,16 +1068,17 @@ POSIX_Init ( void *argument __attribute__((unused)))
 
 
     // wait for dhcp done ... should be if SYNCDHCP is used
-    epicsEventWaitStatus stat;
-    printf("\n ---- Waiting for DHCP ...\n");
-    stat = epicsEventWaitWithTimeout(dhcpDone, 600); 
-    if (stat == epicsEventOK)
-    	epicsEventDestroy(dhcpDone);
-    else if (stat == epicsEventWaitTimeout)
-        printf("\n ---- DHCP timed out!\n");
-    else
-	printf("\n ---- dhcpDone Event Unknown state %d\n", stat);
+//    epicsEventWaitStatus stat;
+//    printf("\n ---- Waiting for DHCP ...\n");
+//    stat = epicsEventWaitWithTimeout(dhcpDone, 600); 
+//    if (stat == epicsEventOK)
+//    	epicsEventDestroy(dhcpDone);
+//    else if (stat == epicsEventWaitTimeout)
+//        printf("\n ---- DHCP timed out!\n");
+//    else
+//	printf("\n ---- dhcpDone Event Unknown state %d\n", stat);
 
+    /* Show network configurations*/
     const char* ifconfg_args[] = {
         "ifconfig", NULL
     };
@@ -1112,7 +1132,9 @@ POSIX_Init ( void *argument __attribute__((unused)))
 #endif // not RTEMS_LEGACY_STACK
 
     printf("\n***** Setting up file system *****\n");
+    sleep(3);
     initialize_remote_filesystem(argv, initialize_local_filesystem(argv));
+    sleep(3);
     fixup_hosts();
 
     /*
